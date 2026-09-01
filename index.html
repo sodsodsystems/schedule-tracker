@@ -268,7 +268,7 @@ window.onload = async () => {
       if (!res.ok) throw new Error('File not found');
       const data = await res.arrayBuffer();
       const workbook = XLSX.read(data);
-      processWorkbookData(workbook);
+      processWorkbookData(workbook, false); // false = full overwrite on fresh load
       document.getElementById('status-text').innerText = 'live · default database';
       document.getElementById('status-dot').style.background = 'var(--ok)';
       renderApp();
@@ -456,7 +456,7 @@ document.getElementById('excel-upload').addEventListener('change', async (e) => 
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
     
-    processWorkbookData(workbook);
+    processWorkbookData(workbook, true); // true = merge with existing
     
     let nowStr = new Date().toLocaleTimeString();
     localStorage.setItem('icpep_sync_time', nowStr);
@@ -477,16 +477,17 @@ document.getElementById('excel-upload').addEventListener('change', async (e) => 
   }
 });
 
-function processWorkbookData(workbook) {
+function processWorkbookData(workbook, isMerge = false) {
     // Process Officers
     const offSheet = workbook.Sheets['Officers'];
     if (!offSheet) throw new Error("Missing 'Officers' sheet");
     const offJson = XLSX.utils.sheet_to_json(offSheet);
     
-    const newOfficers = {};
+    const newOfficers = isMerge ? { ...officersMap } : {};
     offJson.forEach(r => {
       if (r.officer_id && !r.Legend) {
-        newOfficers[r.officer_id.trim()] = {
+        const id = String(r.officer_id).trim().toLowerCase();
+        newOfficers[id] = {
           name: r.name, codename: r.codename, committee: r.committee, color: r.color
         };
       }
@@ -497,11 +498,19 @@ function processWorkbookData(workbook) {
     if (!blockSheet) throw new Error("Missing 'ClassBlocks' sheet");
     const blockJson = XLSX.utils.sheet_to_json(blockSheet, {raw: true}); 
     
-    const newBlocks = [];
+    // Find which IDs are being uploaded so we can clear their old blocks if merging
+    const uploadedIds = new Set();
+    blockJson.forEach(r => {
+       if (r.officer_id && !r.Legend) uploadedIds.add(String(r.officer_id).trim().toLowerCase());
+    });
+    
+    // Keep exact old blocks for people NOT in this upload
+    let newBlocks = isMerge ? classBlocks.filter(b => !uploadedIds.has(b.officer_id.toLowerCase())) : [];
+    
     blockJson.forEach((r, idx) => {
       if (r.officer_id && !r.Legend && r.day && r.subject) {
         newBlocks.push({
-          officer_id: String(r.officer_id).trim(),
+          officer_id: String(r.officer_id).trim().toLowerCase(),
           day: r.day.trim(),
           start_time: r.start_time,
           end_time: r.end_time,
