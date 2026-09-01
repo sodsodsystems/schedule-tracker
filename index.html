@@ -485,8 +485,10 @@ function processWorkbookData(workbook, isMerge = false) {
     
     const newOfficers = isMerge ? { ...officersMap } : {};
     offJson.forEach(r => {
-      if (r.officer_id && !r.Legend) {
+      if (r.officer_id) {
         const id = String(r.officer_id).trim().toLowerCase();
+        // Skip explicitly marked header examples if their ID is something weird, 
+        // but since they have real officer IDs (like 'riza'), we just include them.
         newOfficers[id] = {
           name: r.name, codename: r.codename, committee: r.committee, color: r.color
         };
@@ -501,14 +503,14 @@ function processWorkbookData(workbook, isMerge = false) {
     // Find which IDs are being uploaded so we can clear their old blocks if merging
     const uploadedIds = new Set();
     blockJson.forEach(r => {
-       if (r.officer_id && !r.Legend) uploadedIds.add(String(r.officer_id).trim().toLowerCase());
+       if (r.officer_id) uploadedIds.add(String(r.officer_id).trim().toLowerCase());
     });
     
     // Keep exact old blocks for people NOT in this upload
     let newBlocks = isMerge ? classBlocks.filter(b => !uploadedIds.has(b.officer_id.toLowerCase())) : [];
     
     blockJson.forEach((r, idx) => {
-      if (r.officer_id && !r.Legend && r.day && r.subject) {
+      if (r.officer_id && r.day && r.subject) {
         newBlocks.push({
           officer_id: String(r.officer_id).trim().toLowerCase(),
           day: r.day.trim(),
