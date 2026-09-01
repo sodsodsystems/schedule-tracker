@@ -1,0 +1,35 @@
+Sheet names: ['Officers', 'ClassBlocks', 'Overrides']
+
+--- Officers (rows=200, cols=8) ---
+('officer_id', 'name', 'codename', 'committee', 'color', 'email', None, 'Legend')
+('riza', 'Riza Santos', 'PHANTOM', 'Communications', '#CC007E', 'riza.santos@ust.edu.ph', None, 'Yellow row = example — fill in real officers below it, one row each.')
+('allan', 'Allan Paul A. Sodsod II', 'CORE', 'Executive Board', '#89CFF0', 'allanpaulii.sodsod@ust-legazpi.edu.ph', None, 'officer_id: short lowercase slug, must match ClassBlocks/Overrides exactly.')
+('sofia ', 'Sofia Mae B. Beltran', 'MEOW', 'Executive Board', '#9D00FF', 'sofiamae.beltran@ust-legazpi.edu .ph', None, "color: hex code used for this officer's blocks on the website grid.")
+
+--- ClassBlocks (rows=999, cols=26) ---
+('officer_id', 'day', 'start_time', 'end_time', 'subject', 'term', None, 'Legend', None, None, None, None)
+('riza', 'Monday', '08:00', '10:00', 'CPE 401', '2026-2027-1st', None, 'Yellow row = example — one row per class block, per officer.', None, None, None, None)
+('allan', 'Monday', datetime.time(12, 0), datetime.time(13, 0), 'CPE 323', '2026-2027-1st', None, 'start_time / end_time: 24-hour format, e.g. 08:00, 13:30.', None, None, None, None)
+('allan', 'Tuesday', datetime.time(12, 0), datetime.time(13, 0), 'CPE 323', '2026-2027-1st', None, 'term: used to filter/reset schedules each semester, e.g. 2026-2027-1st.', None, None, None, None)
+('allan', 'Monday', datetime.time(15, 0), datetime.time(16, 30), 'CPE 415', '2026-2027-1st', None, None, None, None, None, None)
+('allan', 'Tuesday', datetime.time(15, 0), datetime.time(16, 30), 'CPE 415', '2026-2027-1st', None, None, None, None, None, None)
+('allan', 'Wednesday', datetime.time(12, 0), datetime.time(13, 0), 'CPE 323.1', '2026-2027-1st', None, None, None, None, None, None)
+('allan', 'Thursday', datetime.time(12, 0), datetime.time(13, 0), 'CPE 323.1', '2026-2027-1st', None, None, None, None, None, None)
+('allan', 'Monday', datetime.time(15, 0), datetime.time(16, 30), 'CPE 313', '2026-2027-1st', None, None, None, None, None, None)
+('allan', 'Tuesday', datetime.time(15, 0), datetime.time(16, 30), 'CPE 313', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Monday', datetime.time(4, 30), datetime.time(6, 0), 'CPE 311', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Tuesday', datetime.time(4, 30), datetime.time(6, 0), 'CPE 311', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Friday', datetime.time(4, 30), datetime.time(6, 0), 'CPE 311.1', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Friday', datetime.time(1, 30), datetime.time(3, 0), 'CPE 311.1', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Monday', datetime.time(1, 30), datetime.time(3, 0), 'CPE 312', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Tuesday', datetime.time(1, 30), datetime.time(3, 0), 'CPE 312', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Wednesday', datetime.time(3, 0), datetime.time(4, 30), 'CPE 313', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Thursday', datetime.time(3, 0), datetime.time(4, 30), 'CPE 313', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Monday', datetime.time(10, 30), datetime.time(12, 0), 'CPE 314.1', '2026-2027-1st', None, None, None, None, None, None)
+('sofia', 'Tuesday', datetime.time(10, 30), datetime.time(12, 0), 'CPE 314.1', '2026-2027-1st', None, None, None, None, None, None)
+...(truncated)
+
+--- Overrides (rows=500, cols=6) ---
+('officer_id', 'date', 'status', 'note', None, 'Legend')
+('riza', '2026-09-15', 'Unavailable', 'OJT site visit', None, 'Yellow row = example — use for one-off exceptions (not recurring classes).')
+(None, None, None, None, None, 'date: specific calendar date this override applies to, not recurring.')
