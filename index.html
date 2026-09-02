@@ -809,8 +809,8 @@ body::before {
 
 <script>
 // Core data
-const DB_VERSION = '1.0.4';
-let officersMap = {}; // { [id]: { name, codename, committee, color } }
+const DB_VERSION = '1.0.4.1';
+let officersMap = {}; // { [id]: { name, codename, committee, color, year_lvl } }
 let classBlocks = []; // { officer_id, day, start_time, end_time, subject, term }
 let activeCommittee = "All";
 let activeOfficer = null;
@@ -915,7 +915,11 @@ function setLegendGroup(mode) {
   renderApp(); // re-render just the legend ideally, but renderApp is fine
 }
 
-function inferYearLevel(officerId) {
+function getOfficerYearLevel(officerId) {
+  const o = officersMap[officerId];
+  if (o && o.year_lvl && String(o.year_lvl).trim()) {
+    return String(o.year_lvl).trim();
+  }
   const blks = classBlocks.filter(b => b.officer_id === officerId);
   if (!blks.length) return 'Unknown';
   let counts = { 1:0, 2:0, 3:0, 4:0 };
@@ -1000,7 +1004,7 @@ function renderApp() {
 
   const groups = {};
   Object.entries(committeeOfficers).forEach(([id, o]) => {
-    let cat = legendGrp === 'year' ? inferYearLevel(id) : (o.committee || 'Committees');
+    let cat = legendGrp === 'year' ? getOfficerYearLevel(id) : (o.committee || 'Committees');
     if (!groups[cat]) groups[cat] = [];
     groups[cat].push({ id, ...o });
   });
@@ -1343,7 +1347,11 @@ function processWorkbookData(workbook, isMerge = false) {
         // Skip explicitly marked header examples if their ID is something weird, 
         // but since they have real officer IDs (like 'riza'), we just include them.
         newOfficers[id] = {
-          name: r.name, codename: r.codename, committee: r.committee, color: r.color
+          name: r.name,
+          codename: r.codename,
+          committee: r.committee,
+          color: r.color,
+          year_lvl: r['year lvl'] || r.year_lvl || r.year || ''
         };
       }
     });
