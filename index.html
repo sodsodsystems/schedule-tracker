@@ -161,24 +161,27 @@ body::before {
   z-index: 2;
 }
 
-.chip {
+button.chip, .chip {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.75);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 9px 20px;
-  border: 1px solid var(--glass-border);
-  border-radius: 9999px;
-  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: var(--glass-highlight);
   user-select: none;
+  outline: none;
 }
 
-.chip:hover:not(.active) {
+button.chip:hover:not(.active), .chip:hover:not(.active) {
   color: #FFFFFF;
   border-color: rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.09);
@@ -186,7 +189,7 @@ body::before {
 }
 
 /* Strict UIUX_RULES.md adherence: Active chips feature vibrant gradient fill with black text for AAA contrast */
-.chip.active {
+button.chip.active, .chip.active {
   border-color: rgba(255, 255, 255, 0.35);
   color: #000000;
   font-weight: 700;
@@ -196,7 +199,7 @@ body::before {
     0 4px 20px rgba(255, 51, 133, 0.45);
 }
 
-.chip:active { transform: scale(0.96); }
+button.chip:active, .chip:active { transform: scale(0.96); }
 
 .spacer { flex: 1; }
 
@@ -473,11 +476,40 @@ body::before {
   margin-top: 12px;
   margin-bottom: 6px;
 }
-.legend-row {
+button.legend-item, .legend-item {
+  appearance: none;
+  -webkit-appearance: none;
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.70);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
 }
+
+button.legend-item:hover, .legend-item:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.20);
+  transform: translateY(-1px);
+}
+
+button.legend-item.active, .legend-item.active {
+  color: #000000;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF3385, #FF66B2);
+  border-color: rgba(255, 255, 255, 0.40);
+  box-shadow: 0 4px 16px rgba(255, 51, 133, 0.40);
+}
+button.legend-item.active span, .legend-item.active span { color: rgba(0, 0, 0, 0.75) !important; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
 /* ── Admin Modal ───────────────────────────────── */
 .modal-overlay {
