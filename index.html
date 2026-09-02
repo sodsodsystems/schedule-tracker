@@ -98,6 +98,25 @@ body {
 .class-block .who { font-weight: 700; font-size: 9.5px; letter-spacing: 0.04em; }
 .class-block .subj { font-weight: 500; font-size: 10px; opacity: 0.9; }
 
+/* Accordion Specific */
+.accordion-group {
+  cursor: pointer; overflow: visible; background: var(--accent-dim); border-color: var(--accent);
+}
+.accordion-group .who { color: var(--accent); display: flex; align-items: center; justify-content: space-between; }
+.accordion-group::after { content: "▼"; font-size: 8px; color: var(--accent); position: absolute; top: 6px; right: 6px; opacity: 0.6; transition: transform 0.2s; }
+.accordion-group.expanded::after { transform: rotate(180deg); }
+.accordion-content {
+  display: none; position: absolute; top: calc(100% + 4px); left: -2px; width: calc(100% + 4px);
+  background: var(--panel-2); border: 1px solid var(--accent); border-radius: 6px;
+  z-index: 999; box-shadow: 0 10px 20px rgba(0,0,0,0.6); padding: 4px;
+  flex-direction: column; gap: 4px; pointer-events: auto;
+}
+.accordion-group.expanded .accordion-content { display: flex; }
+.accordion-group.expanded { z-index: 999; }
+.accordion-sub-block {
+  border-radius: 4px; padding: 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column;
+}
+
 /* Legend & Banner */
 .legend { display: flex; gap: 18px; margin-top: 20px; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted); }
@@ -355,27 +374,85 @@ function renderApp() {
   if (blocks.length === 0) {
     grid.innerHTML += `<div class="empty-state">No schedule data for ${activeCommittee}.</div>`;
   } else {
-    // Render blocks on grid
+    // Group blocks by day
+    const dayGroups = {};
     blocks.forEach(b => {
        const o = officersMap[b.officer_id];
        if(!o) return;
-       const col = DAYS.indexOf(b.day) + 2; // +1 for time col, +1 since 1-indexed
+       const col = DAYS.indexOf(b.day) + 2; 
        if (col < 2) return;
-       
        const sh = parseHour(b.start_time);
        const eh = parseHour(b.end_time);
        if(sh === 0 || eh === 0 || sh >= eh) return;
        
-       // Calculate grid rows. row 2 is 07:00. Every 30 mins = 1 row
-       const rowStart = Math.round((sh - 7) * 2) + 2;
-       const rowSpan = Math.round((eh - sh) * 2);
-       
-       const bg = hexToRgba(o.color || '#FF3385', 0.2);
-       const blockEl = `<div class="class-block" style="grid-column: ${col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${o.color};">
-         <div class="who" style="color:${o.color};">${o.codename || o.name}</div>
-         <div class="subj">${b.subject}</div>
-       </div>`;
-       grid.insertAdjacentHTML('beforeend', blockEl);
+       b._col = col; b._sh = sh; b._eh = eh; b._o = o;
+       if (!dayGroups[b.day]) dayGroups[b.day] = [];
+       dayGroups[b.day].push(b);
+    });
+
+    Object.values(dayGroups).forEach(dayBlocks => {
+      // Sort array by start time
+      dayBlocks.sort((a,b) => a._sh - b._sh);
+      
+      // Cluster intersecting chunks
+      let clusters = [];
+      let currentCluster = [];
+      let maxEnd = -1;
+
+      dayBlocks.forEach(b => {
+        if (currentCluster.length === 0) {
+          currentCluster.push(b);
+          maxEnd = b._eh;
+        } else {
+          if (b._sh < maxEnd) { // Extends over or intersects
+            currentCluster.push(b);
+            maxEnd = Math.max(maxEnd, b._eh);
+          } else {
+            clusters.push(currentCluster);
+            currentCluster = [b];
+            maxEnd = b._eh;
+          }
+        }
+      });
+      if (currentCluster.length > 0) clusters.push(currentCluster);
+
+      // Render clusters to grid
+      clusters.forEach(cluster => {
+        if (cluster.length === 1) {
+          const b = cluster[0];
+          const rowStart = Math.round((b._sh - 7) * 2) + 2;
+          const rowSpan = Math.round((b._eh - b._sh) * 2);
+          const bg = hexToRgba(b._o.color || '#FF3385', 0.2);
+          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color};">
+            <div class="who" style="color:${b._o.color};">${b._o.codename || b._o.name}</div>
+            <div class="subj">${b.subject}</div>
+          </div>`;
+        } else {
+          // Multiple overlapping items = Accordion Group
+          let minSh = Math.min(...cluster.map(b => b._sh));
+          let maxEh = Math.max(...cluster.map(b => b._eh));
+          const rowStart = Math.round((minSh - 7) * 2) + 2;
+          const rowSpan = Math.round((maxEh - minSh) * 2);
+          const col = cluster[0]._col;
+          
+          let contentHTML = cluster.map(b => {
+            const bg = hexToRgba(b._o.color || '#FF3385', 0.1);
+            return `<div class="accordion-sub-block" style="background: ${bg}; border-color: ${b._o.color};">
+              <div class="who" style="color:${b._o.color}; flex-shrink:0;">${b._o.codename || b._o.name}</div>
+              <div class="subj">${b.subject}</div>
+              <div style="font-size:9px; color:var(--muted); margin-top:2px;">${b.start_time} - ${b.end_time}</div>
+            </div>`;
+          }).join('');
+
+          grid.innerHTML += `<div class="class-block accordion-group" style="grid-column: ${col}; grid-row: ${rowStart} / span ${rowSpan};" onclick="this.classList.toggle('expanded')">
+            <div class="who">⚠️ ${cluster.length} Overlaps</div>
+            <div class="subj" style="color:var(--text); opacity:0.8;">Click to expand</div>
+            <div class="accordion-content" onclick="event.stopPropagation()">
+               ${contentHTML}
+            </div>
+          </div>`;
+        }
+      });
     });
   }
   
