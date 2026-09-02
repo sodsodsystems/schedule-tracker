@@ -212,7 +212,7 @@ body::before {
 }
 .free-toggle input { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; }
 
-/* ── Grid Wrap & Glass Surface ──────────────────── */
+/* ── Grid Wrap & Desktop Widen ──────────────────── */
 .grid-wrap {
   border: 1px solid var(--glass-border);
   border-radius: 28px;
@@ -231,9 +231,28 @@ body::before {
 
 .grid {
   display: grid;
-  grid-template-columns: 65px repeat(6, minmax(135px, 1fr));
+  grid-template-columns: 65px repeat(6, minmax(130px, 1fr));
   grid-template-rows: 44px 8px repeat(26, 30px); /* header | spacer | 26 × 30min slots */
   min-width: 820px;
+}
+
+/* PC View: Widen calendar & day columns on desktop screens */
+@media (min-width: 1024px) {
+  body {
+    max-width: 1400px;
+    padding: 48px 40px 100px;
+  }
+  .grid {
+    grid-template-columns: 80px repeat(6, minmax(170px, 1fr));
+    min-width: 1100px;
+  }
+  .head {
+    font-size: 14px;
+    padding-top: 13px;
+  }
+  .class-block {
+    padding: 7px 10px;
+  }
 }
 
 .cell-border {
@@ -391,30 +410,50 @@ body::before {
 }
 .legend-toggles {
   display: flex;
+  position: relative;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 9999px;
   padding: 4px;
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-highlight);
+  isolation: isolate;
 }
 .legend-toggles .leg-btn {
   background: transparent;
   color: var(--muted);
   border: none;
-  padding: 6px 14px;
+  padding: 7px 16px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 12px;
   font-weight: 500;
   border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms ease;
+  position: relative;
+  z-index: 2;
+  outline: none;
 }
 .legend-toggles .leg-btn.active {
-  background: linear-gradient(135deg, rgba(255, 51, 133, 0.25), rgba(255, 102, 178, 0.25));
   color: #FFFFFF;
   font-weight: 600;
-  border: 1px solid rgba(255, 51, 133, 0.40);
-  box-shadow: 0 4px 12px rgba(255, 51, 133, 0.20);
+}
+/* Smooth sliding pill indicator for legend toggle buttons */
+.legend-toggles::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: linear-gradient(135deg, rgba(255, 51, 133, 0.30), rgba(255, 102, 178, 0.30));
+  border: 1px solid rgba(255, 51, 133, 0.50);
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(255, 51, 133, 0.25);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+.legend-toggles[data-active="year"]::before {
+  transform: translateX(100%);
 }
 .legend-group {
   display: flex;
@@ -733,9 +772,9 @@ body::before {
 
 <div class="legend-header-bar">
   <div style="font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Legend</div>
-  <div class="legend-toggles">
-    <button class="leg-btn" id="btn-grp-com" onclick="setLegendGroup('committee')">By Committee</button>
-    <button class="leg-btn" id="btn-grp-yr" onclick="setLegendGroup('year')">By Year Level</button>
+  <div class="legend-toggles" id="legend-toggles-container" data-active="committee">
+    <button type="button" class="leg-btn active" id="btn-grp-com" onclick="setLegendGroup('committee')">By Committee</button>
+    <button type="button" class="leg-btn" id="btn-grp-yr" onclick="setLegendGroup('year')">By Year Level</button>
   </div>
 </div>
 <div class="legend" id="legend-box"></div>
@@ -875,9 +914,11 @@ const COMMITTEE_ORDER = ['Executive', 'Logistics', 'Communications', 'Representa
 
 function setLegendGroup(mode) {
   legendGrp = mode;
+  const container = document.getElementById('legend-toggles-container');
+  if (container) container.setAttribute('data-active', mode);
   document.getElementById('btn-grp-com').classList.toggle('active', mode === 'committee');
   document.getElementById('btn-grp-yr').classList.toggle('active', mode === 'year');
-  renderApp(); // re-render just the legend ideally, but renderApp is fine
+  renderApp(); // re-render legend and UI
 }
 
 function getOfficerYearLevel(officerId) {
@@ -918,9 +959,9 @@ function renderApp() {
   });
   
   // Render filters
-  filterControls.innerHTML = `<div class="chip ${activeCommittee === 'All' ? 'active' : ''}" onclick="setFilter('All')">All Officers</div>`;
+  filterControls.innerHTML = `<button type="button" class="chip ${activeCommittee === 'All' ? 'active' : ''}" onclick="setFilter('All')">All Officers</button>`;
   committees.forEach(c => {
-    filterControls.innerHTML += `<div class="chip ${activeCommittee === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</div>`;
+    filterControls.innerHTML += `<button type="button" class="chip ${activeCommittee === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`;
   });
   filterControls.innerHTML += `<div class="spacer"></div><label class="free-toggle"><input type="checkbox" checked onchange="calcOverlaps(this.checked)"> compute common free slots</label>`;
   
@@ -994,7 +1035,7 @@ function renderApp() {
     groups[cat].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
       const isActive = activeOfficer === o.id;
       const activeClass = isActive ? 'active' : '';
-      rowHtml += `<div class="legend-item ${activeClass}" onclick="setFilter('${activeCommittee}', '${o.id}')"><span class="swatch" style="background:${o.color || 'var(--accent)'};"></span>${o.name} <span style="opacity:0.6;font-size:0.9em;margin-left:4px;">(${o.codename})</span></div>`;
+      rowHtml += `<button type="button" class="legend-item ${activeClass}" onclick="setFilter('${activeCommittee}', '${o.id}')"><span class="swatch" style="background:${o.color || 'var(--accent)'};"></span>${o.name} <span style="opacity:0.6;font-size:0.9em;margin-left:4px;">(${o.codename})</span></button>`;
     });
     rowHtml += `</div></div>`;
     legendBox.innerHTML += rowHtml;
