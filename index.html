@@ -218,7 +218,7 @@ body::before {
 .grid {
   display: grid;
   grid-template-columns: 60px repeat(6, minmax(130px, 1fr));
-  grid-template-rows: 40px repeat(26, 30px);
+  grid-template-rows: 40px 8px repeat(26, 30px); /* header | spacer | 26 × 30min slots */
   min-width: 800px;
 }
 
@@ -860,9 +860,9 @@ function renderApp() {
     grid.innerHTML += `<div class="head" style="${i!==5 ? 'border-right: 1px solid var(--line);' : ''}">${d}</div>`;
   });
   
-  // Base lines and labels
+  // Base lines and labels — row 1=header, row 2=spacer, data starts at row 3
   for(let hour = 7; hour <= 19; hour++) {
-    const r = (hour - 7) * 2 + 2; 
+    const r = (hour - 7) * 2 + 3; 
     let label = hour > 12 ? `${hour-12}:00 PM` : `${hour}:00 AM`;
     if(hour === 12) label = "12:00 PM";
     
@@ -962,7 +962,7 @@ function renderApp() {
       // Render clusters — compact blocks with popover data
       clusters.forEach(cluster => {
         cluster.forEach((b, i) => {
-          const rowStart = Math.round((b._sh - 7) * 2) + 2;
+          const rowStart = Math.round((b._sh - 7) * 2) + 3;
           const rowSpan  = Math.round((b._eh - b._sh) * 2);
           const bg       = hexToRgba(b._o.color || '#FF3385', 0.2);
 
