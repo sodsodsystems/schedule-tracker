@@ -21,10 +21,10 @@
   --ok: #2ED8A7;
   --danger: #FF4A4A;
 
-  --glass-blur: blur(24px) saturate(140%);
-  --glass-border: rgba(255, 255, 255, 0.09);
-  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.10);
-  --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.40);
+  --glass-blur: blur(28px) saturate(160%);
+  --glass-border: rgba(255, 255, 255, 0.11);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,15 +45,28 @@ body {
   position: relative;
 }
 
+/* Grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 55% 50% at 10% 8%, rgba(255, 51, 133, 0.20), transparent 60%),
-    radial-gradient(ellipse 45% 45% at 90% 15%, rgba(100, 120, 255, 0.15), transparent 55%),
-    radial-gradient(ellipse 40% 40% at 55% 88%, rgba(46, 216, 167, 0.09), transparent 55%),
+    radial-gradient(ellipse 60% 55% at 8% 6%,  rgba(255, 30, 110, 0.55),  transparent 55%),
+    radial-gradient(ellipse 50% 45% at 92% 12%, rgba(100, 80, 255, 0.40),  transparent 55%),
+    radial-gradient(ellipse 45% 40% at 50% 92%, rgba(30, 210, 150, 0.22),  transparent 55%),
+    radial-gradient(ellipse 35% 30% at 70% 40%, rgba(180, 60, 255, 0.18),  transparent 50%),
     #06060F;
   animation: ambientPulse 14s ease-in-out infinite alternate;
   pointer-events: none;
@@ -183,17 +196,19 @@ body::before {
 
 /* ── Grid ──────────────────────────────────────── */
 .grid-wrap {
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 24px;
-  background: var(--panel);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: rgba(14, 10, 24, 0.48);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
   box-shadow:
-    var(--glass-highlight),
-    var(--glass-shadow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px rgba(255, 40, 120, 0.10),
+    0 32px 80px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(255, 30, 110, 0.08);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -255,12 +270,12 @@ body::before {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 4px 16px rgba(0, 0, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 4px 20px rgba(0, 0, 0, 0.35);
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
