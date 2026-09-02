@@ -9,27 +9,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ── Design Tokens ─────────────────────────────── */
+/* ── Design Tokens (iOS 18 Glassmorphism System) ── */
 :root {
-  --bg: #06060F;
-  --panel: rgba(18, 18, 28, 0.55);
-  --panel-2: rgba(28, 28, 42, 0.70);
-  --line: rgba(255, 255, 255, 0.07);
+  --bg: #07050A;
+  --panel: rgba(18, 12, 24, 0.58);
+  --panel-2: rgba(28, 18, 36, 0.72);
+  --line: rgba(255, 255, 255, 0.08);
   --text: rgba(255, 255, 255, 0.95);
-  --muted: rgba(255, 255, 255, 0.45);
+  --muted: rgba(255, 255, 255, 0.50);
   --accent: #FF3385;
-  --accent-dim: rgba(255, 51, 133, 0.15);
+  --accent-light: #FF66B2;
+  --accent-dim: rgba(255, 51, 133, 0.16);
   --ok: #2ED8A7;
   --danger: #FF4A4A;
 
-  --glass-blur: blur(28px) saturate(160%);
-  --glass-border: rgba(255, 255, 255, 0.11);
-  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  --glass-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+  --glass-blur: blur(32px) saturate(190%);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --glass-shadow: 0 32px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 51, 133, 0.10);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Body & Atmospheric Background ─────────────── */
+/* ── Body & Atmospheric Mesh Background ─────────── */
 html, body {
   min-height: 100vh;
   background: var(--bg);
@@ -37,22 +39,22 @@ html, body {
 
 body {
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", 'Space Grotesk', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 36px 28px 80px;
+  padding: 40px 28px 80px;
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
 }
 
-/* Grain texture overlay */
+/* Subtle SVG Grain overlay for iOS tactile finish */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 128px 128px;
 }
@@ -63,47 +65,50 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 60% 55% at 8% 6%,  rgba(255, 30, 110, 0.55),  transparent 55%),
-    radial-gradient(ellipse 50% 45% at 92% 12%, rgba(100, 80, 255, 0.40),  transparent 55%),
-    radial-gradient(ellipse 45% 40% at 50% 92%, rgba(30, 210, 150, 0.22),  transparent 55%),
-    radial-gradient(ellipse 35% 30% at 70% 40%, rgba(180, 60, 255, 0.18),  transparent 50%),
-    #06060F;
-  animation: ambientPulse 14s ease-in-out infinite alternate;
+    radial-gradient(ellipse 65% 55% at 5% 5%,    rgba(255, 30, 110, 0.50),  transparent 60%),
+    radial-gradient(ellipse 55% 45% at 95% 10%,  rgba(120, 70, 255, 0.38),  transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 95%,  rgba(30, 210, 150, 0.20),  transparent 60%),
+    radial-gradient(ellipse 40% 35% at 75% 45%,  rgba(200, 50, 255, 0.16),  transparent 55%),
+    #07050A;
+  animation: ambientPulse 16s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
 @keyframes ambientPulse {
-  from { opacity: 1; }
-  to   { opacity: 0.80; }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0.82; transform: scale(1.03); }
 }
 
-/* ── Header ────────────────────────────────────── */
+/* ── iOS Frosted Navigation Header ──────────────── */
 .topline {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 22px;
+  padding-bottom: 24px;
   margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 16px;
+  position: relative;
+  z-index: 2;
 }
 
-.brand { display: flex; flex-direction: column; gap: 5px; }
+.brand { display: flex; flex-direction: column; gap: 6px; }
 
 .brand .org {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--accent);
+  letter-spacing: 0.1em;
+  color: var(--accent-light);
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 .brand h1 {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(130deg, #fff 45%, rgba(255, 51, 133, 0.85));
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #FFFFFF 40%, #FF66B2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -118,68 +123,80 @@ body::before {
 .status {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  gap: 10px;
+  padding: 10px 20px;
   border-radius: 9999px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .status .dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--ok);
-  box-shadow: 0 0 8px var(--ok);
+  box-shadow: 0 0 10px var(--ok);
   flex-shrink: 0;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(0.85); }
 }
 
-/* ── Controls ──────────────────────────────────── */
+/* ── Filter Controls & High-Contrast Segmented Chips ─ */
 .controls {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .chip {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  padding: 8px 18px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 20px;
   border: 1px solid var(--glass-border);
   border-radius: 9999px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-  transition: all 180ms ease;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: var(--glass-highlight);
+  user-select: none;
 }
 
 .chip:hover:not(.active) {
-  color: var(--text);
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-1px);
 }
 
+/* Strict UIUX_RULES.md adherence: Active chips feature vibrant gradient fill with black text for AAA contrast */
 .chip.active {
-  border-color: rgba(255, 51, 133, 0.50);
-  color: var(--accent);
-  background: rgba(255, 51, 133, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #000000;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF3385 0%, #FF66B2 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 0 18px rgba(255, 51, 133, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 20px rgba(255, 51, 133, 0.45);
 }
 
-.chip:active { transform: scale(0.97); }
+.chip:active { transform: scale(0.96); }
 
 .spacer { flex: 1; }
 
@@ -189,37 +206,34 @@ body::before {
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
+  user-select: none;
 }
-.free-toggle input { accent-color: var(--accent); cursor: pointer; }
+.free-toggle input { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; }
 
-/* ── Grid ──────────────────────────────────────── */
+/* ── Grid Wrap & Glass Surface ──────────────────── */
 .grid-wrap {
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 24px;
-  background: rgba(14, 10, 24, 0.48);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  background: var(--panel);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 0 0 1px rgba(255, 40, 120, 0.10),
-    0 32px 80px rgba(0, 0, 0, 0.55),
-    0 0 60px rgba(255, 30, 110, 0.08);
+  box-shadow: var(--glass-shadow);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
-  .grid-wrap { background: rgba(18, 18, 28, 0.90); }
+  .grid-wrap { background: rgba(18, 12, 24, 0.94); }
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 60px repeat(6, minmax(130px, 1fr));
-  grid-template-rows: 40px 8px repeat(26, 30px); /* header | spacer | 26 × 30min slots */
-  min-width: 800px;
+  grid-template-columns: 65px repeat(6, minmax(135px, 1fr));
+  grid-template-rows: 44px 8px repeat(26, 30px); /* header | spacer | 26 × 30min slots */
+  min-width: 820px;
 }
 
 .cell-border {
@@ -236,12 +250,14 @@ body::before {
 /* ── Header Cells ──────────────────────────────── */
 .head {
   background: rgba(255, 255, 255, 0.03);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 13px;
+  font-weight: 600;
   color: var(--text);
-  padding-top: 10px;
+  padding-top: 12px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  letter-spacing: -0.01em;
 }
 
 /* ── Time Labels ───────────────────────────────── */
@@ -250,16 +266,16 @@ body::before {
   font-size: 10px;
   color: var(--muted);
   text-align: right;
-  padding-right: 8px;
+  padding-right: 10px;
   transform: translateY(-6px);
   position: relative;
   z-index: 10;
 }
 
-/* ── Class Blocks ──────────────────────────────── */
+/* ── Class Blocks (iOS Card Style) ─────────────── */
 .class-block {
-  border-radius: 10px;
-  padding: 5px 7px;
+  border-radius: 12px;
+  padding: 6px 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   line-height: 1.35;
@@ -270,21 +286,23 @@ body::before {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 4px 20px rgba(0, 0, 0, 0.35);
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, z-index 0s;
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, z-index 0s;
+  cursor: pointer;
 }
 
 .class-block:hover {
-  transform: scale(1.02);
+  transform: scale(1.025);
   z-index: 90 !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 12px 30px rgba(0, 0, 0, 0.50);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(255, 51, 133, 0.25);
 }
 
 .class-block .who {
@@ -298,7 +316,7 @@ body::before {
   font-weight: 500;
   font-size: 10px;
   opacity: 0.92;
-  color: rgba(255,255,255,0.90);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 /* ── Accordion ─────────────────────────────────── */
@@ -361,115 +379,60 @@ body::before {
   -webkit-backdrop-filter: blur(4px);
 }
 
-/* ── Legend ────────────────────────────────────── */
-.legend {
-  display: flex;
-  gap: 18px;
-  margin-top: 24px;
-  flex-wrap: wrap;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.legend-item:hover { color: var(--text); }
-.legend-item.active { color: var(--text); font-weight: 700; text-shadow: 0 0 12px rgba(255,255,255,0.35); }
-.swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-
-/* ── Overlap Banner ────────────────────────────── */
-.overlap-banner {
-  margin-top: 22px;
-  padding: 13px 20px;
-  border: 1px solid rgba(255, 51, 133, 0.35);
-  border-radius: 9999px;
-  background: rgba(10, 5, 20, 0.55);
-  backdrop-filter: blur(28px) saturate(150%);
-  -webkit-backdrop-filter: blur(28px) saturate(150%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    0 0 24px rgba(255, 51, 133, 0.08);
-  color: var(--muted);
-}
-
-.overlap-banner b { color: var(--accent); }
-
-/* ── Empty State ───────────────────────────────── */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  grid-column: 1 / -1;
-  grid-row: 2 / -1;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--muted);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
-
-/* ── Legend controls & grouping ────────────────── */
+/* ── Legend controls & iOS Grouped List ─────────── */
 .legend-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 32px;
-  margin-bottom: 8px;
+  margin-top: 36px;
+  margin-bottom: 12px;
   grid-column: 1 / -1;
   padding: 0 4px;
 }
 .legend-toggles {
   display: flex;
-  background: rgba(255,255,255,0.03);
-  border-radius: 8px;
-  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+  padding: 4px;
   border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight);
 }
 .legend-toggles .leg-btn {
   background: transparent;
   color: var(--muted);
   border: none;
-  padding: 5px 12px;
-  font-family: inherit;
-  font-size: 11px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .legend-toggles .leg-btn.active {
-  background: rgba(255,255,255,0.1);
-  color: var(--text);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background: linear-gradient(135deg, rgba(255, 51, 133, 0.25), rgba(255, 102, 178, 0.25));
+  color: #FFFFFF;
+  font-weight: 600;
+  border: 1px solid rgba(255, 51, 133, 0.40);
+  box-shadow: 0 4px 12px rgba(255, 51, 133, 0.20);
 }
 .legend-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
 }
 .legend-group-title {
   width: 100%;
-  font-size: 10px;
-  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-light);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border-bottom: 1px dashed rgba(255,255,255,0.1);
-  padding-bottom: 4px;
-  margin-top: 8px;
-  margin-bottom: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-bottom: 6px;
+  margin-top: 12px;
+  margin-bottom: 6px;
 }
 .legend-row {
   display: flex;
@@ -669,52 +632,54 @@ body::before {
   text-overflow: ellipsis;
 }
 
-/* ── Block Popover ─────────────────────────────── */
+/* ── Block Popover (iOS Quick Look Sheet) ───────── */
 .block-popover {
   position: fixed;
   z-index: 5000;
-  min-width: 220px;
-  max-width: 300px;
-  background: rgba(10, 8, 20, 0.78);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 18px;
-  padding: 16px 18px;
+  min-width: 240px;
+  max-width: 320px;
+  background: rgba(18, 12, 28, 0.88);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  padding: 18px 20px;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    0 24px 60px rgba(0,0,0,0.65),
-    0 0 0 1px rgba(255,40,120,0.08);
-  font-family: 'JetBrains Mono', monospace;
-  animation: popIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 24px 60px rgba(0, 0, 0, 0.75),
+    0 0 30px rgba(255, 51, 133, 0.15);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  animation: popIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  from { opacity: 0; transform: scale(0.90) translateY(8px); }
   to   { opacity: 1; transform: scale(1)    translateY(0);   }
 }
 .block-popover .pop-subj {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: rgba(255,255,255,0.95);
+  color: #FFFFFF;
   margin-bottom: 6px;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 .block-popover .pop-time {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .block-popover .pop-officers {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .block-popover .pop-officer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: 10px;
+  font-size: 12px;
   color: rgba(255,255,255,0.80);
 }
 .block-popover .pop-officer .pop-swatch {
