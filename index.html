@@ -718,12 +718,25 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+const COMMITTEE_ORDER = ['Executive', 'Logistics', 'Communications', 'Representatives', 'Committees'];
+
 // Render entire grid/UI
 function renderApp() {
-  // Extract unique committees for chips
+  // Extract unique committees for chips, exclude PHANTOM officers
   const comms = new Set();
-  Object.values(officersMap).forEach(o => o.committee && comms.add(o.committee.trim()));
-  const committees = Array.from(comms).sort();
+  Object.values(officersMap).forEach(o => {
+    if (o.codename && o.codename.trim().toUpperCase() === 'PHANTOM') return;
+    if (o.committee) comms.add(o.committee.trim());
+  });
+  // Sort by predefined order, unknown committees go at end alphabetically
+  const committees = Array.from(comms).sort((a, b) => {
+    const ai = COMMITTEE_ORDER.indexOf(a);
+    const bi = COMMITTEE_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
   
   // Render filters
   filterControls.innerHTML = `<div class="chip ${activeCommittee === 'All' ? 'active' : ''}" onclick="setFilter('All')">All Officers</div>`;
@@ -753,11 +766,16 @@ function renderApp() {
     grid.innerHTML += `<div class="grid-line" style="grid-row: ${r};"></div>`;
   }
   
-  // Filter officers and blocks
-  const committeeOfficers = activeCommittee === 'All' 
-    ? officersMap 
-    : Object.fromEntries(Object.entries(officersMap).filter(([, details]) => details.committee === activeCommittee));
-    
+  // Filter officers and blocks — exclude PHANTOM
+  const isPhantom = ([, o]) => o.codename && o.codename.trim().toUpperCase() === 'PHANTOM';
+  const committeeOfficers = Object.fromEntries(
+    Object.entries(
+      activeCommittee === 'All'
+        ? officersMap
+        : Object.fromEntries(Object.entries(officersMap).filter(([, d]) => d.committee === activeCommittee))
+    ).filter(entry => !isPhantom(entry))
+  );
+
   let renderOfficers = committeeOfficers;
   if (activeOfficer && committeeOfficers[activeOfficer]) {
     renderOfficers = { [activeOfficer]: committeeOfficers[activeOfficer] };
