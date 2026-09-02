@@ -577,6 +577,107 @@ body::before {
 }
 .shake { animation: shake 0.3s ease-in-out; }
 
+/* ── Compact class block (calendar view) ───────── */
+.class-block .cb-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
+.class-block .cb-subj {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.class-block .cb-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.class-block .cb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.class-block .cb-time {
+  font-size: 8.5px;
+  color: rgba(255,255,255,0.50);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Block Popover ─────────────────────────────── */
+.block-popover {
+  position: fixed;
+  z-index: 5000;
+  min-width: 220px;
+  max-width: 300px;
+  background: rgba(10, 8, 20, 0.78);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 24px 60px rgba(0,0,0,0.65),
+    0 0 0 1px rgba(255,40,120,0.08);
+  font-family: 'JetBrains Mono', monospace;
+  animation: popIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+.block-popover .pop-subj {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.block-popover .pop-time {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.block-popover .pop-officers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.block-popover .pop-officer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.80);
+}
+.block-popover .pop-officer .pop-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.block-popover .pop-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.block-popover .pop-close:hover { color: var(--text); }
+
 /* ── Reduced Motion ────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -641,6 +742,9 @@ body::before {
     </div>
   </div>
 </div>
+
+<!-- Block detail popover -->
+<div id="block-popover" class="block-popover" style="display:none;" onclick="event.stopPropagation()"></div>
 
 <script>
 // Core data
@@ -855,24 +959,46 @@ function renderApp() {
       });
       if (currentCluster.length > 0) clusters.push(currentCluster);
 
-      // Render clusters to grid cascading stacks
+      // Render clusters — compact blocks with popover data
       clusters.forEach(cluster => {
         cluster.forEach((b, i) => {
           const rowStart = Math.round((b._sh - 7) * 2) + 2;
-          const rowSpan = Math.round((b._eh - b._sh) * 2);
-          const bg = hexToRgba(b._o.color || '#FF3385', 0.2);
-          
+          const rowSpan  = Math.round((b._eh - b._sh) * 2);
+          const bg       = hexToRgba(b._o.color || '#FF3385', 0.2);
+
           let widthStyling = '';
           if (cluster.length > 1) {
-             const pct = 100 / cluster.length;
-             widthStyling = `width: ${pct}%; margin-left: ${pct * i}%; z-index: ${5 + i};`;
+            const pct = 100 / cluster.length;
+            widthStyling = `width: ${pct}%; margin-left: ${pct * i}%; z-index: ${5 + i};`;
           }
 
-          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color}; ${widthStyling}">
-            <div class="who" style="color:${b._o.color}; flex-shrink:0;">${b._o.codename || b._o.name}</div>
-            <div class="subj">${b.subject}</div>
-            <div style="font-size:9px; color:rgba(255,255,255,0.6); margin-top:2px; line-height:1.2;">${formatHour(b._sh)} - ${formatHour(b._eh)}</div>
-          </div>`;
+          // Build officer list for this block (merged or single)
+          const officers = b._merged
+            ? b._merged.map(m => ({ color: m._o.color, codename: m._o.codename || m._o.name, name: m._o.name }))
+            : [{ color: b._o.color, codename: b._o.codename || b._o.name, name: b._o.name }];
+
+          const dotsHTML = officers.map(o =>
+            `<span class="cb-dot" style="background:${o.color};box-shadow:0 0 4px ${o.color};"></span>`
+          ).join('');
+
+          const popData = JSON.stringify({
+            subj: b.subject,
+            time: `${formatHour(b._sh)} – ${formatHour(b._eh)}`,
+            officers
+          }).replace(/"/g, '&quot;');
+
+          const blockEl = document.createElement('div');
+          blockEl.className = 'class-block';
+          blockEl.style.cssText = `grid-column:${b._col}; grid-row:${rowStart}/span ${rowSpan}; background:${bg}; border-color:${b._o.color}; ${widthStyling}`;
+          blockEl.dataset.pop = popData;
+          blockEl.innerHTML = `
+            <div class="cb-inner">
+              <div class="cb-subj">${b.subject}</div>
+              <div class="cb-dots">${dotsHTML}</div>
+              <div class="cb-time">${formatHour(b._sh)} – ${formatHour(b._eh)}</div>
+            </div>`;
+          blockEl.addEventListener('click', (e) => { e.stopPropagation(); showPopover(blockEl, JSON.parse(blockEl.dataset.pop.replace(/&quot;/g, '"'))); });
+          grid.appendChild(blockEl);
         });
       });
     });
@@ -880,6 +1006,52 @@ function renderApp() {
   
   calcOverlaps(document.querySelector('.free-toggle input').checked, filteredOfficers, blocks);
 }
+
+// ── Popover logic ───────────────────────────────
+const popover = document.getElementById('block-popover');
+
+function showPopover(el, data) {
+  const officersHTML = data.officers.map(o => `
+    <div class="pop-officer">
+      <span class="pop-swatch" style="background:${o.color};box-shadow:0 0 6px ${o.color};"></span>
+      <span>${o.name}${o.codename && o.codename !== o.name ? ' <span style="color:var(--muted);">(' + o.codename + ')</span>' : ''}</span>
+    </div>`).join('');
+
+  popover.innerHTML = `
+    <span class="pop-close" onclick="closePopover()">✕</span>
+    <div class="pop-subj">${data.subj}</div>
+    <div class="pop-time">${data.time}</div>
+    <div class="pop-officers">${officersHTML}</div>`;
+
+  popover.style.display = 'block';
+
+  // Position: prefer right of element, fall back to left
+  const rect = el.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = rect.right + 10;
+  let top  = rect.top;
+
+  popover.style.left = '0px'; popover.style.top = '0px'; // reset to measure
+  const pw = popover.offsetWidth  || 260;
+  const ph = popover.offsetHeight || 160;
+
+  if (left + pw > vw - 12) left = rect.left - pw - 10; // flip left
+  if (top  + ph > vh - 12) top  = vh - ph - 12;         // nudge up
+  if (left < 8)            left = 8;
+
+  popover.style.left = left + 'px';
+  popover.style.top  = Math.max(8, top) + 'px';
+
+  // re-trigger animation
+  popover.style.animation = 'none';
+  requestAnimationFrame(() => { popover.style.animation = ''; });
+}
+
+function closePopover() {
+  popover.style.display = 'none';
+}
+
+document.addEventListener('click', () => closePopover());
 
 function renderEmpty() {
   grid.innerHTML = '<div class="head" style="grid-column: 1/-1">Upload needed</div><div class="empty-state">No schedule data found.<br>Press <b>Ctrl + I</b> to open admin panel and upload an Excel file.</div>';
