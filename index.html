@@ -276,15 +276,16 @@ body::before {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 4px 20px rgba(0, 0, 0, 0.35);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transform: translate(var(--casc-x, 0), var(--casc-y, 0));
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, z-index 0s;
 }
 
 .class-block:hover {
-  transform: scale(1.03);
-  z-index: 20;
+  transform: translate(calc(var(--casc-x, 0) - 2px), calc(var(--casc-y, 0) - 4px)) scale(1.05) !important;
+  z-index: 90 !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 8px 28px rgba(0, 0, 0, 0.40);
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 12px 30px rgba(0, 0, 0, 0.50);
 }
 
 .class-block .who {
@@ -820,42 +821,27 @@ function renderApp() {
       });
       if (currentCluster.length > 0) clusters.push(currentCluster);
 
-      // Render clusters to grid
+      // Render clusters to grid cascading stacks
       clusters.forEach(cluster => {
-        if (cluster.length === 1) {
-          const b = cluster[0];
+        cluster.forEach((b, i) => {
           const rowStart = Math.round((b._sh - 7) * 2) + 2;
           const rowSpan = Math.round((b._eh - b._sh) * 2);
           const bg = hexToRgba(b._o.color || '#FF3385', 0.2);
-          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color};">
-            <div class="who" style="color:${b._o.color};">${b._o.codename || b._o.name}</div>
-            <div class="subj">${b.subject}</div>
-          </div>`;
-        } else {
-          // Multiple overlapping items = Accordion Group
-          let minSh = Math.min(...cluster.map(b => b._sh));
-          let maxEh = Math.max(...cluster.map(b => b._eh));
-          const rowStart = Math.round((minSh - 7) * 2) + 2;
-          const rowSpan = Math.round((maxEh - minSh) * 2);
-          const col = cluster[0]._col;
           
-          let contentHTML = cluster.map(b => {
-            const bg = hexToRgba(b._o.color || '#FF3385', 0.1);
-            return `<div class="accordion-sub-block" style="background: ${bg}; border-color: ${b._o.color};">
-              <div class="who" style="color:${b._o.color}; flex-shrink:0;">${b._o.codename || b._o.name}</div>
-              <div class="subj">${b.subject}</div>
-              <div style="font-size:9px; color:var(--muted); margin-top:2px;">${b.start_time} - ${b.end_time}</div>
-            </div>`;
-          }).join('');
+          let cascadeVars = '';
+          let widthStyling = '';
+          if (cluster.length > 1) {
+             const offset = i * 8; // 8px diagonal offset per card
+             cascadeVars = `--casc-x: ${offset}px; --casc-y: ${offset}px;`;
+             widthStyling = `width: calc(100% - ${(cluster.length - 1) * 8}px); z-index: ${5 + i};`;
+          }
 
-          grid.innerHTML += `<div class="class-block accordion-group" style="grid-column: ${col}; grid-row: ${rowStart} / span ${rowSpan};" onclick="this.classList.toggle('expanded')">
-            <div class="who">⚠️ ${cluster.length} Overlaps</div>
-            <div class="subj" style="color:var(--text); opacity:0.8;">Click to expand</div>
-            <div class="accordion-content" onclick="event.stopPropagation()">
-               ${contentHTML}
-            </div>
+          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color}; ${cascadeVars} ${widthStyling}">
+            <div class="who" style="color:${b._o.color}; flex-shrink:0;">${b._o.codename || b._o.name}</div>
+            <div class="subj">${b.subject}</div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.6); margin-top:2px; line-height:1.2;">${b.start_time} - ${b.end_time}</div>
           </div>`;
-        }
+        });
       });
     });
   }
