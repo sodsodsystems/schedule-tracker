@@ -1,0 +1,15 @@
+# Ignore Markdown files (Documentation, Implementation plans, UI/UX Rules, etc.)
+*.md
+
+# Ignore scratch scripts and output logs
+*.py
+*.txt
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore node_modules or env vars (Standard practice)
+node_modules/
+.env
