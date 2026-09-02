@@ -945,6 +945,7 @@ let classBlocks = []; // { officer_id, day, start_time, end_time, subject, term 
 let activeCommittee = "All";
 let activeOfficer = null;
 let legendGrp = 'committee'; // 'committee' | 'year'
+let computeFreeSlots = true; // persistent toggle state
 
 // DOM Elements
 const grid = document.getElementById('main-grid');
@@ -1089,7 +1090,7 @@ function renderApp() {
   committees.forEach(c => {
     filterControls.innerHTML += `<button type="button" class="chip ${activeCommittee === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`;
   });
-  filterControls.innerHTML += `<div class="spacer"></div><label class="free-toggle"><input type="checkbox" id="free-toggle-chk" checked onchange="calcOverlaps(this.checked)"> compute common free slots</label>`;
+  filterControls.innerHTML += `<div class="spacer"></div><label class="free-toggle"><input type="checkbox" id="free-toggle-chk" ${computeFreeSlots ? 'checked' : ''} onchange="setFreeTimeToggle(this.checked)"> compute common free slots</label>`;
   
   // Update Term info
   if (classBlocks.length > 0) {
@@ -1275,7 +1276,12 @@ function renderApp() {
     });
   }
   
-  calcOverlaps(document.querySelector('.free-toggle input').checked, renderOfficers, blocks);
+  calcOverlaps(computeFreeSlots, renderOfficers, blocks);
+}
+
+function setFreeTimeToggle(checked) {
+  computeFreeSlots = checked;
+  renderApp();
 }
 
 // ── Popover logic ───────────────────────────────
