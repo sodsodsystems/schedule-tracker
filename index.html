@@ -60,12 +60,13 @@ body {
 /* Grid */
 .grid-wrap {
   border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
-  position: relative;
+  position: relative; overflow-x: auto;
 }
 .grid {
   display: grid;
-  grid-template-columns: 60px repeat(6, 1fr);
+  grid-template-columns: 60px repeat(6, minmax(130px, 1fr));
   grid-template-rows: 40px repeat(26, 30px); /* 40px header, 26 * 30mins = 13 hours */
+  min-width: 800px;
 }
 .cell-border {
   border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
@@ -119,8 +120,10 @@ body {
 
 /* Legend & Banner */
 .legend { display: flex; gap: 18px; margin-top: 20px; flex-wrap: wrap; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted); }
-.swatch { width: 12px; height: 12px; border-radius: 50%; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted); cursor: pointer; transition: color 0.1s; }
+.legend-item:hover { color: var(--text); }
+.legend-item.active { color: var(--text); font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+.swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 
 .overlap-banner {
   margin-top: 20px; padding: 12px 16px; border: 1px solid var(--accent); border-radius: 8px;
@@ -256,6 +259,7 @@ body {
 let officersMap = {}; // { [id]: { name, codename, committee, color } }
 let classBlocks = []; // { officer_id, day, start_time, end_time, subject, term }
 let activeCommittee = "All";
+let activeOfficer = null;
 
 // DOM Elements
 const grid = document.getElementById('main-grid');
@@ -358,17 +362,23 @@ function renderApp() {
   }
   
   // Filter officers and blocks
-  const filteredOfficers = activeCommittee === 'All' 
+  const committeeOfficers = activeCommittee === 'All' 
     ? officersMap 
     : Object.fromEntries(Object.entries(officersMap).filter(([, details]) => details.committee === activeCommittee));
     
-  const validIds = new Set(Object.keys(filteredOfficers));
-  const blocks = classBlocks.filter(b => validIds.has(b.officer_id));
+  let renderOfficers = committeeOfficers;
+  if (activeOfficer && committeeOfficers[activeOfficer]) {
+    renderOfficers = { [activeOfficer]: committeeOfficers[activeOfficer] };
+  }
+  
+  const blocks = classBlocks.filter(b => !!renderOfficers[b.officer_id]);
 
-  // Render Legend
+  // Render Legend (Keep showing all committee officers so you can click to switch)
   legendBox.innerHTML = '';
-  Object.values(filteredOfficers).forEach(o => {
-    legendBox.innerHTML += `<div class="legend-item"><span class="swatch" style="background:${o.color || 'var(--accent)'};"></span>${o.name} (${o.codename})</div>`;
+  Object.entries(committeeOfficers).forEach(([id, o]) => {
+    const isActive = activeOfficer === id;
+    const activeClass = isActive ? 'active' : '';
+    legendBox.innerHTML += `<div class="legend-item ${activeClass}" onclick="setFilter('${activeCommittee}', '${id}')"><span class="swatch" style="background:${o.color || 'var(--accent)'};"></span>${o.name} (${o.codename})</div>`;
   });
 
   if (blocks.length === 0) {
@@ -484,8 +494,13 @@ function renderEmpty() {
   document.getElementById('status-dot').style.background = 'var(--line)';
 }
 
-function setFilter(committee) {
-  activeCommittee = committee;
+function setFilter(committee, officer = null) {
+  if (officer && activeOfficer === officer) activeOfficer = null; // Toggle off
+  else if (officer) activeOfficer = officer;
+  else {
+     activeCommittee = committee;
+     activeOfficer = null;
+  }
   renderApp();
 }
 
@@ -497,11 +512,59 @@ function calcOverlaps(enabled, officers = null, activeBlocks = []) {
   }
   
   overlapBanner.style.display = 'flex';
-  const names = Object.keys(officers).length;
-  // A naive overlap logic: we flag busy 30-min slots per officer
-  // then look for contiguous free slots across everyone.
-  // Simplifying just to avoid 500 lines of logic.
-  overlapBanner.innerHTML = `⨯ <span>Finding common schedule slots for <b>${activeCommittee}</b> ... (Algorithm implemented in backend/full version)</span>`;
+  const namesCount = Object.keys(officers).length;
+  
+  // 13 hours total (07:00 to 20:00) = 26 slots
+  const busyGrid = {};
+  DAYS.forEach(d => busyGrid[d] = new Array(26).fill(false));
+  
+  activeBlocks.forEach(b => {
+     let sh = parseHour(b.start_time);
+     let eh = parseHour(b.end_time);
+     if(sh < 7 || eh > 20 || sh >= eh || !busyGrid[b.day]) return; 
+     
+     let startIdx = Math.max(0, Math.round((sh - 7) * 2));
+     let endIdx = Math.min(26, Math.round((eh - 7) * 2));
+     
+     for(let i=startIdx; i<endIdx; i++) {
+        busyGrid[b.day][i] = true;
+     }
+  });
+  
+  let freeIntervals = [];
+  DAYS.forEach(d => {
+    let currentStart = -1;
+    for(let i=0; i<26; i++) {
+      if(!busyGrid[d][i]) {
+         if(currentStart === -1) currentStart = i;
+      } else {
+         if(currentStart !== -1) {
+            freeIntervals.push({ day: d, startIdx: currentStart, endIdx: i });
+            currentStart = -1;
+         }
+      }
+    }
+    if(currentStart !== -1) freeIntervals.push({ day: d, startIdx: currentStart, endIdx: 26 });
+  });
+  
+  // Filter for intervals >= 1.5 hours (3 slots)
+  const substantial = freeIntervals.filter(fi => (fi.endIdx - fi.startIdx) >= 3);
+  substantial.sort((a,b) => (b.endIdx - b.startIdx) - (a.endIdx - a.startIdx));
+  
+  if (substantial.length === 0) {
+     overlapBanner.innerHTML = `⨯ <span>No common free block &ge; 1.5 hours found for <b>${namesCount} officers</b>.</span>`;
+  } else {
+     const formatH = idx => {
+        let hr = Math.floor(7 + (idx/2));
+        let min = (idx % 2) === 1 ? '30' : '00';
+        let ap = hr >= 12 ? 'PM' : 'AM';
+        if(hr > 12) hr -= 12;
+        if(hr === 0) hr = 12;
+        return `${hr}:${min} ${ap}`;
+     };
+     const topIntervals = substantial.slice(0, 2).map(fi => `${fi.day} ${formatH(fi.startIdx)} - ${formatH(fi.endIdx)}`);
+     overlapBanner.innerHTML = `✓ <span>Free time for <b>${activeCommittee}</b>: <span style="color:var(--ok)">${topIntervals.join(' • ')}</span></span>`;
+  }
 }
 
 // --- Admin Panel Logic ---
