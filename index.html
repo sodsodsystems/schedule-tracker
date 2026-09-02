@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ICpEP.SE — Schedule Tracker</title>
+<link rel="icon" type="image/png" href="ICPEP_Logo.png">
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -461,43 +462,50 @@ button.chip:active, .chip:active { transform: scale(0.96); }
 .legend-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   width: 100%;
 }
 .legend-group-title {
   width: 100%;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   color: var(--accent-light);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
-  padding-bottom: 6px;
-  margin-top: 12px;
-  margin-bottom: 6px;
+  padding-bottom: 3px;
+  margin-top: 6px;
+  margin-bottom: 2px;
 }
+.legend-row {
+  display: flex;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+}
+
 button.legend-item, .legend-item {
   appearance: none;
   -webkit-appearance: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.70);
-  padding: 6px 14px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 4px 10px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+  user-select: none;
 }
 
 button.legend-item:hover, .legend-item:hover {
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.20);
+  border-color: rgba(255, 255, 255, 0.22);
   transform: translateY(-1px);
 }
 
@@ -506,10 +514,10 @@ button.legend-item.active, .legend-item.active {
   font-weight: 700;
   background: linear-gradient(135deg, #FF3385, #FF66B2);
   border-color: rgba(255, 255, 255, 0.40);
-  box-shadow: 0 4px 16px rgba(255, 51, 133, 0.40);
+  box-shadow: 0 4px 14px rgba(255, 51, 133, 0.35);
 }
 button.legend-item.active span, .legend-item.active span { color: rgba(0, 0, 0, 0.75) !important; }
-.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.swatch { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
 /* ── Admin Modal ───────────────────────────────── */
 .modal-overlay {
@@ -1294,7 +1302,7 @@ function calcOverlaps(enabled, officers = null, activeBlocks = []) {
   substantial.sort((a,b) => (b.endIdx - b.startIdx) - (a.endIdx - a.startIdx));
   
   if (substantial.length === 0) {
-     overlapBanner.innerHTML = `⨯ <span>No common free block &ge; 1.5 hours found for <b>${namesCount} officers</b>.</span>`;
+     overlapBanner.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(255,74,74,0.2);color:var(--danger);font-size:11px;font-weight:700;">✕</span> <span>No common free block &ge; 1.5 hours found for <b>${namesCount} officers</b>.</span>`;
   } else {
      const formatH = idx => {
         let hr = Math.floor(7 + (idx/2));
@@ -1304,8 +1312,8 @@ function calcOverlaps(enabled, officers = null, activeBlocks = []) {
         if(hr === 0) hr = 12;
         return `${hr}:${min} ${ap}`;
      };
-     const topIntervals = substantial.slice(0, 2).map(fi => `${fi.day} ${formatH(fi.startIdx)} - ${formatH(fi.endIdx)}`);
-     overlapBanner.innerHTML = `✓ <span>Free time for <b>${activeCommittee}</b>: <span style="color:var(--ok)">${topIntervals.join(' • ')}</span></span>`;
+     const topIntervals = substantial.slice(0, 2).map(fi => `<span style="padding:3px 8px;background:rgba(46,216,167,0.12);border:1px solid rgba(46,216,167,0.30);border-radius:6px;color:#2ED8A7;font-weight:600;font-family:'JetBrains Mono',monospace;">${fi.day} ${formatH(fi.startIdx)} - ${formatH(fi.endIdx)}</span>`).join(' ');
+     overlapBanner.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(46,216,167,0.2);color:var(--ok);font-size:11px;font-weight:700;">✓</span> <span>Free time for <b>${activeCommittee}</b>:</span> <div style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;">${topIntervals}</div>`;
   }
 }
 
