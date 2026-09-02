@@ -1053,11 +1053,10 @@ function renderApp() {
       const dayBlocks = Object.values(identicalGroups).map(group => {
         if (group.length === 1) return group[0];
         const first = group[0];
-        // If more than 2, maybe say "John, Doe + 2 others", but for now join all names.
-        const names = group.map(b => b._o.codename || b._o.name).join(', ');
         return {
           ...first,
-          _o: { ...first._o, codename: names, color: '#FF3385' } // Highlight pink for multi-officer classes
+          _merged: group, // preserve every officer for dot rendering & popover
+          _o: { ...first._o, codename: group.map(b => b._o.codename || b._o.name).join(', '), color: first._o.color }
         };
       });
 
