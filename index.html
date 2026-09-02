@@ -1312,8 +1312,8 @@ function calcOverlaps(enabled, officers = null, activeBlocks = []) {
         if(hr === 0) hr = 12;
         return `${hr}:${min} ${ap}`;
      };
-     const topIntervals = substantial.slice(0, 2).map(fi => `<span style="padding:3px 8px;background:rgba(46,216,167,0.12);border:1px solid rgba(46,216,167,0.30);border-radius:6px;color:#2ED8A7;font-weight:600;font-family:'JetBrains Mono',monospace;">${fi.day} ${formatH(fi.startIdx)} - ${formatH(fi.endIdx)}</span>`).join(' ');
-     overlapBanner.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(46,216,167,0.2);color:var(--ok);font-size:11px;font-weight:700;">✓</span> <span>Free time for <b>${activeCommittee}</b>:</span> <div style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;">${topIntervals}</div>`;
+     const topIntervals = substantial.slice(0, 2).map(fi => `<span class="glass-time-pill">${fi.day} ${formatH(fi.startIdx)} – ${formatH(fi.endIdx)}</span>`).join('');
+     overlapBanner.innerHTML = `<div class="overlap-left"><span class="status-icon ok">✓</span><span>Free time for <b>${activeCommittee}</b></span></div><div class="overlap-right">${topIntervals}</div>`;
   }
 }
 
