@@ -276,12 +276,11 @@ body::before {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 4px 20px rgba(0, 0, 0, 0.35);
-  transform: translate(var(--casc-x, 0), var(--casc-y, 0));
   transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, z-index 0s;
 }
 
 .class-block:hover {
-  transform: translate(calc(var(--casc-x, 0) - 2px), calc(var(--casc-y, 0) - 4px)) scale(1.05) !important;
+  transform: scale(1.02);
   z-index: 90 !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
@@ -680,18 +679,35 @@ window.onload = async () => {
 
 // Convert "08:00" string or decimal to float hour (e.g. 7.5 meaning 07:30)
 function parseHour(val) {
+  let h = 0;
   if (typeof val === 'number') {
     // Excel time as fraction of a day (e.g. 0.333 = 08:00)
-    return val * 24; 
+    h = val * 24; 
+  } else if (val) {
+    // Handle string like "08:00" or datetime objects if exported as text
+    const str = String(val).trim();
+    const parts = str.split(':');
+    if (parts.length >= 2) {
+      h = parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+    }
   }
-  if (!val) return 0;
-  // Handle string like "08:00" or datetime objects if exported as text
-  const str = String(val).trim();
-  const parts = str.split(':');
-  if (parts.length >= 2) {
-    return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+  // Auto-correct early morning hours to PM (e.g. 1:30 -> 13.5)
+  if (h > 0 && h < 7) {
+    h += 12;
   }
-  return 0;
+  return h;
+}
+
+// Format float 7.5 -> "7:30 AM"
+function formatHour(h) {
+  if (!h) return '';
+  let hr = Math.floor(h);
+  let min = Math.round((h - hr) * 60);
+  let ap = hr >= 12 ? 'PM' : 'AM';
+  if (hr > 12) hr -= 12;
+  if (hr === 0) hr = 12;
+  let minStr = min < 10 ? '0' + min : min;
+  return `${hr}:${minStr} ${ap}`;
 }
 
 function hexToRgba(hex, alpha) {
@@ -828,18 +844,16 @@ function renderApp() {
           const rowSpan = Math.round((b._eh - b._sh) * 2);
           const bg = hexToRgba(b._o.color || '#FF3385', 0.2);
           
-          let cascadeVars = '';
           let widthStyling = '';
           if (cluster.length > 1) {
-             const offset = i * 8; // 8px diagonal offset per card
-             cascadeVars = `--casc-x: ${offset}px; --casc-y: ${offset}px;`;
-             widthStyling = `width: calc(100% - ${(cluster.length - 1) * 8}px); z-index: ${5 + i};`;
+             const pct = 100 / cluster.length;
+             widthStyling = `width: ${pct}%; margin-left: ${pct * i}%; z-index: ${5 + i};`;
           }
 
-          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color}; ${cascadeVars} ${widthStyling}">
+          grid.innerHTML += `<div class="class-block" style="grid-column: ${b._col}; grid-row: ${rowStart} / span ${rowSpan}; background: ${bg}; border-color: ${b._o.color}; ${widthStyling}">
             <div class="who" style="color:${b._o.color}; flex-shrink:0;">${b._o.codename || b._o.name}</div>
             <div class="subj">${b.subject}</div>
-            <div style="font-size:9px; color:rgba(255,255,255,0.6); margin-top:2px; line-height:1.2;">${b.start_time} - ${b.end_time}</div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.6); margin-top:2px; line-height:1.2;">${formatHour(b._sh)} - ${formatHour(b._eh)}</div>
           </div>`;
         });
       });
